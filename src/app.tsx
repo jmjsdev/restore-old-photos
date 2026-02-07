@@ -532,7 +532,7 @@ export function App() {
       <div class="flex-1 flex overflow-hidden">
 
         {/* LEFT: Photos */}
-        <div class="w-80 flex-shrink-0 border-r border-zinc-800 flex flex-col">
+        <div class="flex-1 min-w-0 border-r border-zinc-800 flex flex-col">
           <div class="p-3 border-b border-zinc-800 flex items-center justify-between">
             <h2 class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
               Photos ({photos.length})
@@ -574,8 +574,8 @@ export function App() {
         </div>
 
         {/* CENTER: Steps & Launch */}
-        <div class="flex-1 flex flex-col items-center justify-start overflow-auto p-6">
-          <div class="w-full max-w-xs space-y-5">
+        <div class="w-full max-w-[350px] flex-shrink-0 flex flex-col items-center justify-start overflow-auto p-6">
+          <div class="w-full space-y-5">
             <div data-tour="steps">
               <h2 class="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-3">
                 Étapes de restauration
@@ -639,7 +639,7 @@ export function App() {
         </div>
 
         {/* RIGHT: Jobs */}
-        <div class="w-96 flex-shrink-0 border-l border-zinc-800 flex flex-col">
+        <div class="w-full max-w-[400px] flex-shrink-0 border-l border-zinc-800 flex flex-col">
           <div data-tour="jobs-header" class="p-3 border-b border-zinc-800 space-y-2">
             <div class="flex items-center justify-between">
               <h2 class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
