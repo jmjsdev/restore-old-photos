@@ -1,0 +1,36 @@
+node_modules
+dist
+ai/venv
+uploads/*
+results/*
+.git
+*.pth
+*.pt
+gfpgan/
+__pycache__
+ai/models/
+
+# BOPBTL : garder uniquement le code de détection
+ai/bopbtl/Face_Detection
+ai/bopbtl/Face_Enhancement
+ai/bopbtl/GUI.py
+ai/bopbtl/predict.py
+ai/bopbtl/run.py
+ai/bopbtl/Dockerfile
+ai/bopbtl/Global/data
+ai/bopbtl/Global/models
+ai/bopbtl/Global/options
+ai/bopbtl/Global/util
+ai/bopbtl/Global/test.py
+ai/bopbtl/Global/train_*
+ai/bopbtl/Global/checkpoints/restoration
+
+# Dev & docs
+*.md
+LICENSE
+.vscode
+.idea
+*.swp
+.DS_Store
+.env
+.env.*

@@ -1,0 +1,31 @@
+node_modules
+dist
+uploads/*
+!uploads/.gitkeep
+results/*
+!results/.gitkeep
+ai/venv
+ai/models
+__pycache__
+gfpgan/
+*.pth
+
+# BOPBTL: only keep detection code, exclude everything else
+ai/bopbtl/*
+!ai/bopbtl/Global/
+ai/bopbtl/Global/*
+!ai/bopbtl/Global/detection_models/
+!ai/bopbtl/Global/detection_util/
+!ai/bopbtl/Global/checkpoints/
+ai/bopbtl/Global/checkpoints/*
+!ai/bopbtl/Global/checkpoints/detection/
+ai/bopbtl/Global/checkpoints/detection/*
+!ai/bopbtl/Global/checkpoints/detection/.gitkeep
+
+# Env local
+.env
+.env.local
+.env*.local
+
+# Docker volumes
+models/
