@@ -19,31 +19,34 @@ const STEP_ICONS: Record<StepKey, string> = {
   upscale: '🔍',
 }
 
-export const STEP_ORDER: StepKey[] = ['crop', 'inpaint', 'spot_removal', 'scratch_removal', 'face_restore', 'colorize', 'upscale']
+export const STEP_ORDER: StepKey[] = [
+  'crop',
+  'inpaint',
+  'spot_removal',
+  'scratch_removal',
+  'face_restore',
+  'colorize',
+  'upscale',
+]
 
 export function StepSelector({ steps, selected, onToggle, onToggleAll, modelChoices, onModelChange }: Props) {
-  const availableSteps = STEP_ORDER.filter(k => steps[k])
-  const allSelected = availableSteps.length > 0 && availableSteps.every(k => selected.has(k))
+  const availableSteps = STEP_ORDER.filter((k) => steps[k])
+  const allSelected = availableSteps.length > 0 && availableSteps.every((k) => selected.has(k))
 
   return (
     <div class="space-y-2">
       <button
         onClick={onToggleAll}
-        class={`
-          w-full flex items-center gap-3 px-3 py-2 transition-all text-left border rounded-lg text-xs
-          ${allSelected
+        class={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left text-xs transition-all ${
+          allSelected
             ? 'border-amber-400/40 bg-amber-400/5 text-amber-300'
-            : 'border-zinc-800 bg-zinc-900/30 text-zinc-500 hover:border-zinc-600'}
-        `}
+            : 'border-zinc-800 bg-zinc-900/30 text-zinc-500 hover:border-zinc-600'
+        } `}
       >
         <div
-          class={`
-            w-3.5 h-3.5 rounded border flex-shrink-0
-            flex items-center justify-center text-[9px] font-bold
-            ${allSelected
-              ? 'bg-amber-400 border-amber-400 text-zinc-900'
-              : 'border-zinc-600'}
-          `}
+          class={`flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded border text-[9px] font-bold ${
+            allSelected ? 'border-amber-400 bg-amber-400 text-zinc-900' : 'border-zinc-600'
+          } `}
         >
           {allSelected && '✓'}
         </div>
@@ -61,33 +64,21 @@ export function StepSelector({ steps, selected, onToggle, onToggleAll, modelChoi
           <div key={key} class="space-y-0">
             <button
               onClick={() => onToggle(key)}
-              class={`
-                w-full flex items-center gap-3 px-3 py-2.5 transition-all text-left border
-                ${hasModels && isSelected ? 'rounded-t-lg border-b-0' : 'rounded-lg'}
-                ${
-                  isSelected
-                    ? 'border-amber-400/60 bg-amber-400/10 text-amber-100'
-                    : 'border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:border-zinc-600'
-                }
-              `}
+              class={`flex w-full items-center gap-3 border px-3 py-2.5 text-left transition-all ${hasModels && isSelected ? 'rounded-t-lg border-b-0' : 'rounded-lg'} ${
+                isSelected
+                  ? 'border-amber-400/60 bg-amber-400/10 text-amber-100'
+                  : 'border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:border-zinc-600'
+              } `}
             >
               <span class="text-lg">{STEP_ICONS[key]}</span>
               <div class="min-w-0 flex-1">
-                <p class="text-sm font-medium truncate">{step.name}</p>
-                <p class="text-[11px] opacity-50 truncate">
-                  {currentModelInfo ? currentModelInfo.name : step.model}
-                </p>
+                <p class="truncate text-sm font-medium">{step.name}</p>
+                <p class="truncate text-[11px] opacity-50">{currentModelInfo ? currentModelInfo.name : step.model}</p>
               </div>
               <div
-                class={`
-                  w-4 h-4 rounded border flex-shrink-0
-                  flex items-center justify-center text-[10px] font-bold
-                  ${
-                    isSelected
-                      ? 'bg-amber-400 border-amber-400 text-zinc-900'
-                      : 'border-zinc-600'
-                  }
-                `}
+                class={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border text-[10px] font-bold ${
+                  isSelected ? 'border-amber-400 bg-amber-400 text-zinc-900' : 'border-zinc-600'
+                } `}
               >
                 {isSelected && '✓'}
               </div>
@@ -95,12 +86,12 @@ export function StepSelector({ steps, selected, onToggle, onToggleAll, modelChoi
 
             {/* Model selector dropdown */}
             {hasModels && isSelected && (
-              <div class="border border-t-0 border-amber-400/60 rounded-b-lg bg-amber-400/5 px-3 py-2">
+              <div class="rounded-b-lg border border-t-0 border-amber-400/60 bg-amber-400/5 px-3 py-2">
                 <select
                   value={currentModel}
                   onChange={(e) => onModelChange(key, (e.target as HTMLSelectElement).value)}
                   onClick={(e) => e.stopPropagation()}
-                  class="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-xs text-zinc-200 cursor-pointer focus:border-amber-400/60 focus:outline-none"
+                  class="w-full cursor-pointer rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-200 focus:border-amber-400/60 focus:outline-none"
                 >
                   {Object.entries(step.models!).map(([modelKey, modelInfo]) => (
                     <option key={modelKey} value={modelKey}>

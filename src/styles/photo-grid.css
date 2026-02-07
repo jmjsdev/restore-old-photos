@@ -1,0 +1,41 @@
+/* PhotoGrid BEM styles */
+
+.photo-grid {
+  @apply grid grid-cols-2 gap-2;
+}
+
+/* --- Photo card --- */
+.photo-grid__card {
+  @apply relative group rounded-lg overflow-hidden cursor-pointer ring-2 transition-all duration-150;
+  @apply ring-transparent hover:ring-zinc-600;
+}
+.photo-grid__card--selected {
+  @apply ring-amber-400 scale-[1.02];
+}
+
+/* --- Thumbnail image --- */
+.photo-grid__thumb {
+  @apply w-full aspect-square object-cover;
+}
+
+/* --- Selection indicator --- */
+.photo-grid__indicator {
+  @apply absolute top-1.5 left-1.5 w-4 h-4 rounded-full border-2 flex items-center justify-center text-[9px] font-bold transition-all;
+  @apply border-white/60 bg-black/40;
+}
+.photo-grid__indicator--selected {
+  @apply bg-amber-400 border-amber-400 text-zinc-900;
+}
+
+/* --- Delete button --- */
+.photo-grid__delete {
+  @apply absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-red-500/80 text-white text-[10px] flex items-center justify-center transition-colors hover:bg-red-500;
+}
+
+/* --- Name overlay --- */
+.photo-grid__name-bar {
+  @apply absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-1.5;
+}
+.photo-grid__name {
+  @apply text-[10px] text-zinc-300 truncate;
+}

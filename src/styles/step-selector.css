@@ -1,0 +1,72 @@
+/* StepSelector BEM styles */
+
+.step-selector {
+  @apply space-y-2;
+}
+
+/* --- Toggle-all button --- */
+.step-selector__toggle-all {
+  @apply flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left text-xs transition-all;
+  @apply border-zinc-800 bg-zinc-900/30 text-zinc-500 hover:border-zinc-600;
+}
+.step-selector__toggle-all--active {
+  @apply border-amber-400/40 bg-amber-400/5 text-amber-300;
+}
+
+/* --- Checkbox indicator (shared between toggle-all and step) --- */
+.step-selector__checkbox {
+  @apply flex flex-shrink-0 items-center justify-center rounded border text-[9px] font-bold;
+  @apply border-zinc-600;
+}
+.step-selector__checkbox--sm {
+  @apply h-3.5 w-3.5;
+}
+.step-selector__checkbox--md {
+  @apply h-4 w-4 text-[10px];
+}
+.step-selector__checkbox--checked {
+  @apply border-amber-400 bg-amber-400 text-zinc-900;
+}
+
+/* --- Step wrapper --- */
+.step-selector__step {
+  @apply space-y-0;
+}
+
+/* --- Step button --- */
+.step-selector__btn {
+  @apply flex w-full items-center gap-3 border px-3 py-2.5 text-left transition-all rounded-lg;
+  @apply border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:border-zinc-600;
+}
+.step-selector__btn--selected {
+  @apply border-amber-400/60 bg-amber-400/10 text-amber-100;
+}
+.step-selector__btn--has-models {
+  @apply rounded-t-lg rounded-b-none border-b-0;
+}
+
+/* --- Step icon --- */
+.step-selector__icon {
+  @apply text-lg;
+}
+
+/* --- Step info text --- */
+.step-selector__info {
+  @apply min-w-0 flex-1;
+}
+.step-selector__name {
+  @apply truncate text-sm font-medium;
+}
+.step-selector__model {
+  @apply truncate text-[11px] opacity-50;
+}
+
+/* --- Model dropdown panel --- */
+.step-selector__models {
+  @apply rounded-b-lg border border-t-0 border-amber-400/60 bg-amber-400/5 px-3 py-2;
+}
+
+/* --- Model select --- */
+.step-selector__select {
+  @apply w-full cursor-pointer rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-200 focus:border-amber-400/60 focus:outline-none;
+}
