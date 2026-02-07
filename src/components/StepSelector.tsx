@@ -4,6 +4,7 @@ interface Props {
   steps: Record<string, StepInfo>
   selected: Set<StepKey>
   onToggle: (step: StepKey) => void
+  onToggleAll: () => void
   modelChoices: Record<string, string>
   onModelChange: (step: string, model: string) => void
 }
@@ -20,9 +21,34 @@ const STEP_ICONS: Record<StepKey, string> = {
 
 export const STEP_ORDER: StepKey[] = ['crop', 'inpaint', 'spot_removal', 'scratch_removal', 'face_restore', 'colorize', 'upscale']
 
-export function StepSelector({ steps, selected, onToggle, modelChoices, onModelChange }: Props) {
+export function StepSelector({ steps, selected, onToggle, onToggleAll, modelChoices, onModelChange }: Props) {
+  const availableSteps = STEP_ORDER.filter(k => steps[k])
+  const allSelected = availableSteps.length > 0 && availableSteps.every(k => selected.has(k))
+
   return (
     <div class="space-y-2">
+      <button
+        onClick={onToggleAll}
+        class={`
+          w-full flex items-center gap-3 px-3 py-2 transition-all text-left border rounded-lg text-xs
+          ${allSelected
+            ? 'border-amber-400/40 bg-amber-400/5 text-amber-300'
+            : 'border-zinc-800 bg-zinc-900/30 text-zinc-500 hover:border-zinc-600'}
+        `}
+      >
+        <div
+          class={`
+            w-3.5 h-3.5 rounded border flex-shrink-0
+            flex items-center justify-center text-[9px] font-bold
+            ${allSelected
+              ? 'bg-amber-400 border-amber-400 text-zinc-900'
+              : 'border-zinc-600'}
+          `}
+        >
+          {allSelected && '✓'}
+        </div>
+        <span>{allSelected ? 'Tout décocher' : 'Tout cocher'}</span>
+      </button>
       {STEP_ORDER.map((key) => {
         const step = steps[key]
         if (!step) return null

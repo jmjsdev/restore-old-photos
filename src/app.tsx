@@ -339,6 +339,14 @@ export function App() {
     })
   }, [])
 
+  const toggleAllSteps = useCallback(() => {
+    setSelectedSteps((prev) => {
+      const available = STEP_ORDER.filter(k => steps[k])
+      const allSelected = available.every(k => prev.has(k))
+      return allSelected ? new Set<StepKey>() : new Set<StepKey>(available)
+    })
+  }, [steps])
+
   const changeModel = useCallback((step: string, model: string) => {
     setModelChoices((prev) => ({ ...prev, [step]: model }))
   }, [])
@@ -577,6 +585,7 @@ export function App() {
                   steps={steps}
                   selected={selectedSteps}
                   onToggle={toggleStep}
+                  onToggleAll={toggleAllSteps}
                   modelChoices={modelChoices}
                   onModelChange={changeModel}
                 />
