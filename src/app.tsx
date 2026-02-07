@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'preact/hooks'
 import { Dropzone } from './components/Dropzone'
 import { PhotoGrid } from './components/PhotoGrid'
-import { StepSelector } from './components/StepSelector'
+import { StepSelector, STEP_ORDER } from './components/StepSelector'
 import { JobList } from './components/JobList'
 import { BeforeAfter } from './components/BeforeAfter'
 import { MaskEditor } from './components/MaskEditor'
@@ -359,7 +359,7 @@ export function App() {
     }
 
     const photoIds = [...selectedPhotos]
-    const stepsToRun = [...selectedSteps]
+    const stepsToRun = STEP_ORDER.filter(s => selectedSteps.has(s))
 
     // Submit directly — manual steps (crop/inpaint) will pause as waiting_input
     const newJobs = await api.createJobs(photoIds, stepsToRun, options)
@@ -592,7 +592,7 @@ export function App() {
               )}
               {selectedSteps.size > 0 && (
                 <span class="block mt-0.5 text-amber-400/60">
-                  {[...selectedSteps].map(s => steps[s]?.name).filter(Boolean).join(' → ')}
+                  {STEP_ORDER.filter(s => selectedSteps.has(s)).map(s => steps[s]?.name).filter(Boolean).join(' → ')}
                 </span>
               )}
             </div>

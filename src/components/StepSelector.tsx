@@ -18,7 +18,7 @@ const STEP_ICONS: Record<StepKey, string> = {
   upscale: '🔍',
 }
 
-const STEP_ORDER: StepKey[] = ['crop', 'inpaint', 'spot_removal', 'scratch_removal', 'face_restore', 'colorize', 'upscale']
+export const STEP_ORDER: StepKey[] = ['crop', 'inpaint', 'spot_removal', 'scratch_removal', 'face_restore', 'colorize', 'upscale']
 
 export function StepSelector({ steps, selected, onToggle, modelChoices, onModelChange }: Props) {
   return (
