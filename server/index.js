@@ -333,6 +333,7 @@ const STEP_MODELS = {
     },
     defaultModel: 'full',
     requiresApiKey: 'OPENAI_API_KEY',
+    disabled: true,
   },
 }
 
@@ -340,6 +341,7 @@ app.get('/api/steps', (_req, res) => {
   // Filter out steps that require an API key not configured
   const filtered = {}
   for (const [key, step] of Object.entries(STEP_MODELS)) {
+    if (step.disabled) continue
     if (step.requiresApiKey && !process.env[step.requiresApiKey]) continue
     filtered[key] = step
   }
