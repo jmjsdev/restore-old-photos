@@ -11,7 +11,7 @@ export function PhotoGrid({ photos, selected, onToggle, onDelete }: Props) {
   if (!photos.length) return null
 
   return (
-    <div class="grid grid-cols-2 gap-2">
+    <div class="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
       {photos.map((photo) => {
         const isSelected = selected.has(photo.id)
         return (
@@ -25,7 +25,7 @@ export function PhotoGrid({ photos, selected, onToggle, onDelete }: Props) {
             `}
           >
             <img
-              src={(photo as any)._thumbUrl || `/uploads/${photo.filename}`}
+              src={(photo as any)._blobUrl || `/uploads/${photo.filename}`}
               alt={photo.originalName}
               class="w-full aspect-square object-cover"
             />

@@ -27,5 +27,8 @@ ai/bopbtl/Global/checkpoints/detection/*
 .env.local
 .env*.local
 
+# Logs
+logs/
+
 # Docker volumes
 models/

@@ -17,6 +17,7 @@ const STEP_ICONS: Record<StepKey, string> = {
   face_restore: '👤',
   colorize: '🎨',
   upscale: '🔍',
+  online_restore: '☁️',
 }
 
 export const STEP_ORDER: StepKey[] = [
@@ -27,6 +28,7 @@ export const STEP_ORDER: StepKey[] = [
   'face_restore',
   'colorize',
   'upscale',
+  'online_restore',
 ]
 
 export function StepSelector({ steps, selected, onToggle, onToggleAll, modelChoices, onModelChange }: Props) {

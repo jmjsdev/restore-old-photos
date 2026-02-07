@@ -10,6 +10,7 @@ services:
       - CLEANUP_INTERVAL_HOURS=${CLEANUP_INTERVAL_HOURS:-2}
       - CLEANUP_MAX_AGE_HOURS=${CLEANUP_MAX_AGE_HOURS:-2}
       - HEARTBEAT_TIMEOUT_SECONDS=${HEARTBEAT_TIMEOUT_SECONDS:-10}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     volumes:
       - oldphotos-data:/data
     restart: unless-stopped

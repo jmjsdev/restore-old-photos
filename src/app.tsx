@@ -29,6 +29,9 @@ export function App() {
   const [maxConcurrent, setMaxConcurrent] = useState(1)
   const [maxConcurrentLimit, setMaxConcurrentLimit] = useState(2)
 
+  // Local files not yet uploaded (photo.id → File)
+  const localFilesRef = useRef<Map<string, File>>(new Map())
+
   // Full-page drag & drop
   const [pageDrag, setPageDrag] = useState(false)
   const pageDragCountRef = useRef(0)
@@ -258,19 +261,28 @@ export function App() {
     }
   }, [jobs, autoDownload])
 
-  const handleUpload = useCallback(async (files: File[]) => {
-    setUploading(true)
-    try {
-      const uploaded = await api.uploadPhotos(files)
-      setPhotos((prev) => [...prev, ...uploaded])
-      setSelectedPhotos((prev) => {
-        const next = new Set(prev)
-        uploaded.forEach((p) => next.add(p.id))
-        return next
-      })
-    } finally {
-      setUploading(false)
-    }
+  const handleUpload = useCallback((files: File[]) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.tiff', '.bmp']
+    const valid = files.filter(f => allowed.some(ext => f.name.toLowerCase().endsWith(ext)))
+    if (!valid.length) return
+
+    const newPhotos: Photo[] = valid.map(file => {
+      const id = crypto.randomUUID()
+      localFilesRef.current.set(id, file)
+      return {
+        id,
+        filename: '',
+        originalName: file.name,
+        uploadedAt: new Date().toISOString(),
+        _blobUrl: URL.createObjectURL(file),
+      } as Photo & { _blobUrl: string }
+    })
+    setPhotos(prev => [...prev, ...newPhotos])
+    setSelectedPhotos(prev => {
+      const n = new Set(prev)
+      for (const p of newPhotos) n.add(p.id)
+      return n
+    })
   }, [])
 
   // Full-page drag & drop detection
@@ -315,20 +327,33 @@ export function App() {
   }, [])
 
   const deletePhoto = useCallback(async (id: string) => {
-    await api.deletePhoto(id)
-    setPhotos((prev) => prev.filter((p) => p.id !== id))
-    setSelectedPhotos((prev) => {
+    if (localFilesRef.current.has(id)) {
+      // Local photo — just clean up blob URL
+      const photo = photos.find(p => p.id === id) as any
+      if (photo?._blobUrl) URL.revokeObjectURL(photo._blobUrl)
+      localFilesRef.current.delete(id)
+    } else {
+      await api.deletePhoto(id)
+    }
+    setPhotos(prev => prev.filter(p => p.id !== id))
+    setSelectedPhotos(prev => {
       const next = new Set(prev)
       next.delete(id)
       return next
     })
-  }, [])
+  }, [photos])
 
   const clearPhotos = useCallback(async () => {
-    await api.deleteAllPhotos()
+    // Clean up blob URLs
+    for (const photo of photos) {
+      if ((photo as any)._blobUrl) URL.revokeObjectURL((photo as any)._blobUrl)
+    }
+    localFilesRef.current.clear()
+    // Delete server-side photos too
+    if (photos.some(p => p.filename)) await api.deleteAllPhotos()
     setPhotos([])
     setSelectedPhotos(new Set())
-  }, [])
+  }, [photos])
 
   const toggleStep = useCallback((step: StepKey) => {
     setSelectedSteps((prev) => {
@@ -366,14 +391,47 @@ export function App() {
       if (modelChoices[step]) options[step] = modelChoices[step]
     }
 
-    const photoIds = [...selectedPhotos]
     const stepsToRun = STEP_ORDER.filter(s => selectedSteps.has(s))
 
-    // Submit directly — manual steps (crop/inpaint) will pause as waiting_input
+    // Upload local photos first (in batches of 5)
+    const localIds = [...selectedPhotos].filter(id => localFilesRef.current.has(id))
+    const idMap = new Map<string, string>() // localId → serverId
+    const BATCH = 5
+
+    if (localIds.length > 0) {
+      setUploading(true)
+      try {
+        for (let i = 0; i < localIds.length; i += BATCH) {
+          const batch = localIds.slice(i, i + BATCH)
+          const files = batch.map(id => localFilesRef.current.get(id)!)
+          const uploaded = await api.uploadPhotos(files)
+          batch.forEach((localId, idx) => {
+            idMap.set(localId, uploaded[idx].id)
+            // Clean up local state
+            const oldPhoto = photos.find(p => p.id === localId) as any
+            if (oldPhoto?._blobUrl) URL.revokeObjectURL(oldPhoto._blobUrl)
+            localFilesRef.current.delete(localId)
+          })
+          // Update photos in state: replace local entries with server entries
+          setPhotos(prev => prev.map(p => {
+            const serverId = idMap.get(p.id)
+            if (!serverId) return p
+            const uploaded2 = uploaded.find(u => u.id === serverId)
+            return uploaded2 || p
+          }))
+        }
+      } finally {
+        setUploading(false)
+      }
+    }
+
+    // Map selected IDs to server IDs
+    const photoIds = [...selectedPhotos].map(id => idMap.get(id) || id)
+
     const newJobs = await api.createJobs(photoIds, stepsToRun, options)
-    setJobs((prev) => [...newJobs, ...prev])
+    setJobs(prev => [...newJobs, ...prev])
     setSelectedPhotos(new Set())
-  }, [selectedPhotos, selectedSteps, modelChoices])
+  }, [selectedPhotos, selectedSteps, modelChoices, photos])
 
   // --- Waiting job editor handlers ---
 
@@ -639,20 +697,30 @@ export function App() {
         </div>
 
         {/* RIGHT: Jobs */}
-        <div class="w-full max-w-[400px] flex-shrink-0 border-l border-zinc-800 flex flex-col">
+        <div class="w-full max-w-[450px] flex-shrink-0 border-l border-zinc-800 flex flex-col">
           <div data-tour="jobs-header" class="p-3 border-b border-zinc-800 space-y-2">
             <div class="flex items-center justify-between">
               <h2 class="text-xs font-medium text-zinc-400 uppercase tracking-wider">
                 Jobs ({jobs.length})
               </h2>
-              {jobs.some(j => j.status === 'completed' || j.status === 'failed') && (
-                <button
-                  onClick={() => setJobs(prev => prev.filter(j => j.status === 'processing' || j.status === 'pending' || j.status === 'waiting_input'))}
-                  class="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
-                >
-                  Vider terminés
-                </button>
-              )}
+              <div class="flex items-center gap-3">
+                {jobs.some(j => j.status === 'processing' || j.status === 'pending' || j.status === 'waiting_input') && (
+                  <button
+                    onClick={async () => { await api.cancelAllJobs(); api.getJobs().then(setJobs) }}
+                    class="text-[11px] text-red-400/60 hover:text-red-400 transition-colors"
+                  >
+                    Tout arrêter
+                  </button>
+                )}
+                {jobs.some(j => j.status === 'completed' || j.status === 'failed' || j.status === 'cancelled') && (
+                  <button
+                    onClick={() => setJobs(prev => prev.filter(j => j.status === 'processing' || j.status === 'pending' || j.status === 'waiting_input'))}
+                    class="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                  >
+                    Vider terminés
+                  </button>
+                )}
+              </div>
             </div>
             <div data-tour="concurrency" class="flex items-center gap-2">
               <span class="text-[10px] text-zinc-500 whitespace-nowrap">Parallèle</span>

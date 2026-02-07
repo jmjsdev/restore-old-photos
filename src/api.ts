@@ -124,3 +124,7 @@ export async function cancelJob(jobId: string): Promise<void> {
   await fetch(`${BASE}/jobs/${jobId}/cancel`, { method: 'POST' })
 }
 
+export async function cancelAllJobs(): Promise<void> {
+  await fetch(`${BASE}/jobs/cancel-all`, { method: 'POST' })
+}
+

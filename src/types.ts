@@ -18,7 +18,7 @@ export interface StepInfo {
   defaultModel?: string
 }
 
-export type StepKey = 'crop' | 'inpaint' | 'spot_removal' | 'scratch_removal' | 'face_restore' | 'colorize' | 'upscale'
+export type StepKey = 'crop' | 'inpaint' | 'spot_removal' | 'scratch_removal' | 'face_restore' | 'colorize' | 'upscale' | 'online_restore'
 
 export interface StepResult {
   step: StepKey

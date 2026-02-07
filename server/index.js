@@ -1,4 +1,5 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
+dotenv.config({ path: ['.env.local', '.env'] })
 import express from 'express'
 import multer from 'multer'
 import { randomUUID } from 'crypto'
@@ -173,19 +174,25 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 })
 
-app.post('/api/photos', upload.array('photos', 20), (req, res) => {
-  const uploaded = []
-  for (const file of req.files) {
-    const photo = {
-      id: randomUUID(),
-      filename: file.filename,
-      originalName: file.originalname,
-      uploadedAt: new Date().toISOString(),
+app.post('/api/photos', (req, res) => {
+  upload.array('photos', 20)(req, res, (err) => {
+    if (err) {
+      console.error('Upload error:', err.message)
+      return res.status(400).json({ error: err.message })
     }
-    photos.set(photo.id, photo)
-    uploaded.push(photo)
-  }
-  res.json(uploaded)
+    const uploaded = []
+    for (const file of req.files) {
+      const photo = {
+        id: randomUUID(),
+        filename: file.filename,
+        originalName: file.originalname,
+        uploadedAt: new Date().toISOString(),
+      }
+      photos.set(photo.id, photo)
+      uploaded.push(photo)
+    }
+    res.json(uploaded)
+  })
 })
 
 app.get('/api/photos', (_req, res) => {
@@ -313,10 +320,30 @@ const STEP_MODELS = {
     },
     defaultModel: 'compact',
   },
+  online_restore: {
+    name: 'IA en ligne (OpenAI)',
+    model: 'GPT-4o Image',
+    repo: 'https://platform.openai.com/docs/guides/images',
+    script: 'restore_openai.py',
+    models: {
+      full: { name: 'Restauration complète', desc: 'Répare + colorise + améliore (tout-en-un)' },
+      restore: { name: 'Restauration seule', desc: 'Supprime rayures et taches uniquement' },
+      colorize: { name: 'Colorisation', desc: 'Colorise en couleurs réalistes' },
+      enhance: { name: 'Amélioration', desc: 'Netteté, contraste, détails' },
+    },
+    defaultModel: 'full',
+    requiresApiKey: 'OPENAI_API_KEY',
+  },
 }
 
 app.get('/api/steps', (_req, res) => {
-  res.json(STEP_MODELS)
+  // Filter out steps that require an API key not configured
+  const filtered = {}
+  for (const [key, step] of Object.entries(STEP_MODELS)) {
+    if (step.requiresApiKey && !process.env[step.requiresApiKey]) continue
+    filtered[key] = step
+  }
+  res.json(filtered)
 })
 
 // --- Apply crop immediately (returns new cropped photo) ---
@@ -548,6 +575,7 @@ const STEP_PREFIXES = {
   face_restore: 'FACE',
   colorize: 'COL',
   upscale: 'UPS',
+  online_restore: 'CLOUD',
 }
 
 /** Sanitize filename: remove accents, replace special chars */
@@ -645,6 +673,16 @@ async function processJob(job) {
         }
         if (step === 'upscale') {
           args.push(selectedModel, '2')
+        }
+        if (step === 'online_restore') {
+          // Map model keys to comma-separated steps expected by restore_openai.py
+          const onlineStepsMap = {
+            full: 'restore,colorize,enhance',
+            restore: 'restore',
+            colorize: 'colorize',
+            enhance: 'enhance',
+          }
+          args.push(onlineStepsMap[selectedModel] || selectedModel)
         }
       }
 
@@ -874,6 +912,27 @@ app.post('/api/jobs/:id/cancel', (req, res) => {
   // Trigger queue — a slot may have freed up
   processNext()
   res.json({ ok: true })
+})
+
+// --- Cancel all active jobs ---
+
+app.post('/api/jobs/cancel-all', (_req, res) => {
+  const cancellable = ['pending', 'processing', 'waiting_input']
+  let count = 0
+  for (const job of jobs.values()) {
+    if (!cancellable.includes(job.status)) continue
+    job.status = 'cancelled'
+    job.currentStep = null
+    job.waitingStep = null
+    job.waitingImage = null
+    const proc = runningProcs.get(job.id)
+    if (proc) {
+      proc.kill('SIGTERM')
+      runningProcs.delete(job.id)
+    }
+    count++
+  }
+  res.json({ ok: true, cancelled: count })
 })
 
 // --- Nettoyage automatique des fichiers anciens ---

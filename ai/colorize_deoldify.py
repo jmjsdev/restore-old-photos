@@ -41,7 +41,40 @@ def download_model(weights_name):
     print(f'Downloaded to {model_path}', file=sys.stderr)
 
 
+def is_already_color(img_path, sat_threshold=30, pct_threshold=15, hue_std_threshold=20):
+    """Detect if an image is already in color via HSV saturation + hue diversity.
+    Sepia/toned photos have saturation but all on the same hue — not truly colored.
+    """
+    import cv2
+    import numpy as np
+    img = cv2.imread(img_path, cv2.IMREAD_COLOR)
+    if img is None:
+        return False
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    saturation = hsv[:, :, 1]
+    colored_mask = saturation > sat_threshold
+    pct_colored = colored_mask.sum() / saturation.size * 100
+
+    hue_std = 0.0
+    if colored_mask.sum() > 100:
+        hues = hsv[:, :, 0][colored_mask].astype(np.float32)
+        hues_rad = hues * (2 * np.pi / 180)
+        sin_mean = np.mean(np.sin(hues_rad))
+        cos_mean = np.mean(np.cos(hues_rad))
+        hue_std = np.sqrt(-2 * np.log(max(1e-10, np.sqrt(sin_mean**2 + cos_mean**2)))) * (180 / (2 * np.pi))
+
+    print(f'Couleur: {pct_colored:.1f}% pixels saturés, diversité teinte: {hue_std:.1f}° (seuils: {pct_threshold}%, {hue_std_threshold}°)', file=sys.stderr)
+    return pct_colored > pct_threshold and hue_std > hue_std_threshold
+
+
 def main(input_path, output_path, variant='artistic'):
+    if is_already_color(input_path):
+        print('Image déjà en couleur, copie sans traitement', file=sys.stderr)
+        import shutil
+        shutil.copy2(input_path, output_path)
+        print(f'OK {output_path}')
+        return
+
     import torch
     from pathlib import Path
 
