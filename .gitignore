@@ -1,5 +1,6 @@
 node_modules
 dist
+packages/frontend/dist
 uploads/*
 !uploads/.gitkeep
 results/*
@@ -32,3 +33,6 @@ logs/
 
 # Docker volumes
 models/
+
+# Tauri
+packages/desktop/src-tauri/target/

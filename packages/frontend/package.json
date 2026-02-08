@@ -1,0 +1,18 @@
+{
+  "name": "@oldphotos/frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:js": "esbuild src/main.tsx --bundle --outfile=dist/app.js --jsx=automatic --jsx-import-source=preact --target=es2020 --minify",
+    "build:css": "tailwindcss -i src/index.css -o dist/style.css --minify",
+    "build": "npm run build:js && npm run build:css && cp src/index.html dist/index.html",
+    "dev": "esbuild src/main.tsx --bundle --outfile=dist/app.js --jsx=automatic --jsx-import-source=preact --target=es2020 --watch & tailwindcss -i src/index.css -o dist/style.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "esbuild": "^0.27.3",
+    "preact": "^10.28.3",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3"
+  }
+}

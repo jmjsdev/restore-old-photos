@@ -1,5 +1,7 @@
 node_modules
 dist
+packages/frontend/dist
+packages/desktop/src-tauri/target
 ai/venv
 uploads/*
 results/*

@@ -148,4 +148,4 @@ if [ -d "$SITE_PKG" ]; then
     "$SITE_PKG/simple_lama_inpainting/models/model.py" 2>/dev/null || true
 fi
 
-exec node server/index.js
+exec node packages/core/index.js

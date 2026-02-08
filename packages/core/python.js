@@ -5,7 +5,8 @@ import { AI_DIR, VENV_PYTHON, SETUP_PID_FILE, SETUP_LOG_FILE, SETUP_ERROR_FILE }
 import { runningProcs } from './storage.js'
 
 export function getPython() {
-  return existsSync(VENV_PYTHON) ? VENV_PYTHON : 'python3'
+  if (existsSync(VENV_PYTHON)) return VENV_PYTHON
+  return process.platform === 'win32' ? 'python' : 'python3'
 }
 
 export function isAiReady() {

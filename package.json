@@ -3,26 +3,21 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/frontend",
+    "packages/core",
+    "packages/desktop"
+  ],
   "scripts": {
-    "build:js": "esbuild src/main.tsx --bundle --outfile=dist/app.js --jsx=automatic --jsx-import-source=preact --target=es2020 --minify",
-    "build:css": "tailwindcss -i src/index.css -o dist/style.css --minify",
-    "build": "npm run build:js && npm run build:css && cp src/index.html dist/index.html",
-    "dev": "npm run build:dev & node --watch server/index.js",
-    "build:dev": "esbuild src/main.tsx --bundle --outfile=dist/app.js --jsx=automatic --jsx-import-source=preact --target=es2020 --watch & tailwindcss -i src/index.css -o dist/style.css --watch",
-    "start": "node server/index.js"
-  },
-  "dependencies": {
-    "dotenv": "^17.2.4",
-    "express": "^5.2.1",
-    "multer": "^2.0.2"
+    "dev:web": "concurrently -n fe,srv -c blue,green \"npm run dev -w @oldphotos/frontend\" \"npm run dev -w @oldphotos/core\"",
+    "dev:desktop": "concurrently -n fe,srv,tauri -c blue,green,magenta \"npm run dev -w @oldphotos/frontend\" \"npm run dev -w @oldphotos/core\" \"npm run dev -w @oldphotos/desktop\"",
+    "build:web": "npm run build -w @oldphotos/frontend",
+    "build:desktop": "npm run build:web && npm run build -w @oldphotos/desktop",
+    "start": "node packages/core/index.js"
   },
   "devDependencies": {
-    "@tailwindcss/cli": "^4.1.18",
-    "esbuild": "^0.27.3",
-    "preact": "^10.28.3",
+    "concurrently": "^9.1.0",
     "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
-    "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "prettier-plugin-tailwindcss": "^0.7.2"
   }
 }

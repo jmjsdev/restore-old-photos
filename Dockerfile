@@ -3,11 +3,13 @@ FROM node:22-slim AS frontend-builder
 
 WORKDIR /app
 COPY package.json package-lock.json* ./
+COPY packages/frontend/package.json packages/frontend/package.json
+COPY packages/core/package.json packages/core/package.json
+COPY packages/desktop/package.json packages/desktop/package.json
 RUN npm install
 
-COPY src/ src/
-COPY tsconfig.json ./
-RUN npm run build
+COPY packages/frontend/ packages/frontend/
+RUN npm run build -w @oldphotos/frontend
 
 # ── Stage 2 : Image finale (légère, sans dépendances Python) ─────────
 FROM python:3.12-slim
@@ -23,21 +25,26 @@ WORKDIR /app
 
 # Dépendances Node.js (production uniquement)
 COPY package.json package-lock.json* ./
+COPY packages/core/package.json packages/core/package.json
+COPY packages/frontend/package.json packages/frontend/package.json
+COPY packages/desktop/package.json packages/desktop/package.json
 RUN npm install --omit=dev
 
 # Code source
-COPY server/ server/
+COPY packages/core/ packages/core/
 COPY ai/ ai/
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 # Frontend pré-compilé
-COPY --from=frontend-builder /app/dist/ dist/
+COPY --from=frontend-builder /app/packages/frontend/dist/ packages/frontend/dist/
 
 # Les dépendances Python (torch, basicsr, etc.) sont installées
 # au premier démarrage dans /data/venv par l'entrypoint
-ENV UPLOADS_DIR=/data/uploads \
+ENV OLDPHOTOS_ROOT=/app \
+    UPLOADS_DIR=/data/uploads \
     RESULTS_DIR=/data/results \
+    DIST_DIR=/app/packages/frontend/dist \
     TORCH_HOME=/data/models/torch \
     HF_HOME=/data/models/huggingface \
     GFPGAN_MODEL_DIR=/data/models/gfpgan

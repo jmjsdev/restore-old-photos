@@ -1,0 +1,8 @@
+{
+  "identifier": "default",
+  "description": "Default capability for Old Photos Restorer",
+  "windows": ["*"],
+  "permissions": [
+    "core:default"
+  ]
+}
